@@ -25,46 +25,48 @@ $nv_Lang->loadGlobal();
         '' => []
     ];
     $array_keys = $array_cats = $array_apis;
-
+	$api_not_access = array('Api','IApi', 'Exception','ApiResult');
     // Các API của hệ thống
-    $files = nv_scandir(NV_ROOTDIR . '/includes/api', '/(.*?)/');
+    $files = nv_scandir(NV_ROOTDIR . '/vendor/vinades/nukeviet/Api', '/(.*?)/');
     foreach ($files as $file) {
         if (preg_match('/^([^0-9]+[a-z0-9\_]{0,})\.php$/', $file, $m)) {
             $class_name = $m[1];
-            $class_namespaces = 'NukeViet\\Api\\' . $class_name;
-            if (nv_class_exists($class_namespaces)) {
-                $class_cat = $class_namespaces::getCat();
-                $cat_title = $nv_Lang->getModule('api_' . $class_cat);
-                $api_title = $nv_Lang->getModule('api_' . $class_cat . '_' . $class_name);
-                if (!isset($array_apis[''][$class_cat])) {
-                    $array_apis[''][$class_cat] = [
-                        'title' => $nv_Lang->getModule('api_' . $class_cat),
-                        'apis' => []
-                    ];
-                }
-                $array_apis[''][$class_cat]['apis'][$class_name] = [
-                    'title' => $api_title,
-                    'cmd' => $class_name
-                ];
-                $array_keys[''][$class_name] = $class_name;
-                $array_cats[''][$class_name] = [
-                    'key' => $class_cat,
-                    'title' => $cat_title,
-                    'api_title' => $api_title
-                ];
-            }
+			if(!in_array($class_name,$api_not_access,true)){
+				$class_namespaces = 'NukeViet\\Api\\' . $class_name;
+				if (nv_class_exists($class_namespaces)) {
+					$class_cat = $class_namespaces::getCat();
+					$cat_title = $nv_Lang->getModule('api_' . $class_cat);
+					$api_title = $nv_Lang->getModule('api_' . $class_cat . '_' . $class_name);
+					if (!isset($array_apis[''][$class_cat])) {
+						$array_apis[''][$class_cat] = [
+							'title' => $nv_Lang->getModule('api_' . $class_cat),
+							'apis' => []
+						];
+					}
+					$array_apis[''][$class_cat]['apis'][$class_name] = [
+						'title' => $api_title,
+						'cmd' => $class_name
+					];
+					$array_keys[''][$class_name] = $class_name;
+					$array_cats[''][$class_name] = [
+						'key' => $class_cat,
+						'title' => $cat_title,
+						'api_title' => $api_title
+					];
+				}
+			}
         }
     }
 
     // Các API của module cung cấp
     foreach ($sys_mods as $module_name => $module_info) {
-        $module_file = $module_info['module_file'];
-        if (file_exists(NV_ROOTDIR . '/modules/' . $module_file . '/Api')) {
+        $module_file = ucfirst($module_info['module_file']);
+        if (file_exists(NV_ROOTDIR . '/vendor/vinades/nukeviet/Module/' . $module_file . '/Api')) {
             // Đọc ngôn ngữ tạm của module
             $nv_Lang->loadModule($module_file, false, true);
 
             // Lấy các API
-            $files = nv_scandir(NV_ROOTDIR . '/modules/' . $module_file . '/Api', '/(.*?)/');
+            $files = nv_scandir(NV_ROOTDIR . '/vendor/vinades/nukeviet/Module/' . $module_file . '/Api', '/(.*?)/');
             foreach ($files as $file) {
                 if (preg_match('/^([^0-9]+[a-z0-9\_]{0,})\.php$/', $file, $m)) {
                     $class_name = $m[1];

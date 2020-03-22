@@ -18,6 +18,8 @@ if (defined('NV_IS_GODADMIN')) {
     $submenu['api-credentials'] = $lang_module['api_cr'];
     $submenu['api-roles'] = $lang_module['api_roles'];
     $submenu['config'] = $lang_module['config'];
+    $allow_func[] = 'main';
+    $allow_func[] = 'config';
     $allow_func[] = 'api-credentials';
     $allow_func[] = 'api-roles';
     $allow_func[] = 'config';

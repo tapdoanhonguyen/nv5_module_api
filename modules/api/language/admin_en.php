@@ -20,3 +20,17 @@ $lang_translator['langtype'] = 'lang_module';
 $lang_module['main'] = 'Main';
 $lang_module['config'] = 'Config';
 $lang_module['save'] = 'Lưu lại';
+
+//Lang for function role
+$lang_module['role'] = 'role';
+$lang_module['edit'] = 'edit';
+$lang_module['delete'] = 'Delete';
+$lang_module['number'] = 'Number';
+$lang_module['active'] = 'Trạng thái';
+$lang_module['search_title'] = 'Enter keywords searching';
+$lang_module['search_submit'] = 'Search';
+$lang_module['role_title'] = 'Role title';
+$lang_module['role_description'] = 'Role description';
+$lang_module['role_data'] = 'Role data';
+$lang_module['error_required_role_title'] = 'Error: Required fields enter the Role title';
+$lang_module['error_required_role_data'] = 'Error: Required fields enter the Role data';

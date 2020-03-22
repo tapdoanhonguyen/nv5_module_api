@@ -66,3 +66,18 @@ $lang_module['api_System'] = 'Các chức năng hệ thống';
 $lang_module['api_System_SendMail'] = 'Gửi email';
 
 $lang_module['other_info'] = 'Thông tin khác';
+
+//Lang for function role
+$lang_module['role'] = 'role';
+$lang_module['add'] = 'Thêm mới';
+$lang_module['edit'] = 'Sửa';
+$lang_module['delete'] = 'Xóa';
+$lang_module['number'] = 'STT';
+$lang_module['active'] = 'Trạng thái';
+$lang_module['search_title'] = 'Nhập từ khóa tìm kiếm';
+$lang_module['search_submit'] = 'Tìm kiếm';
+$lang_module['role_title'] = 'Role title';
+$lang_module['role_description'] = 'Role description';
+$lang_module['role_data'] = 'Role data';
+$lang_module['error_required_role_title'] = 'Lỗi: bạn cần nhập dữ liệu cho Role title';
+$lang_module['error_required_role_data'] = 'Lỗi: bạn cần nhập dữ liệu cho Role data';

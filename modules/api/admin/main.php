@@ -8,7 +8,7 @@
  * @Createdate Sat, 07 Mar 2020 09:01:23 GMT
  */
 
-if (!defined('NV_IS_FILE_ADMIN'))
+if (!defined('NV_IS_FILE_API'))
     die('Stop!!!');
 
 $page_title = $lang_module['main'];

@@ -78,10 +78,16 @@ if (!empty($credential_ident) and !isset($array[$credential_ident])) {
     nv_redirect_location(NV_BASE_ADMINURL . 'index.php?' . NV_LANG_VARIABLE . '=' . NV_LANG_DATA . '&' . NV_NAME_VARIABLE . '=' . $module_name . '&' . NV_OP_VARIABLE . '=' . $op);
 }
 
-$tpl = new \NukeViet\Template\Smarty();
-$tpl->setTemplateDir(NV_ROOTDIR . '/themes/' . $global_config['module_theme'] . '/modules/' . $module_file);
-$tpl->assign('LANG', $nv_Lang);
-$tpl->assign('LINK_ADD', NV_BASE_ADMINURL . 'index.php?' . NV_LANG_VARIABLE . '=' . NV_LANG_DATA . '&amp;' . NV_NAME_VARIABLE . '=' . $module_name . '&amp;' . NV_OP_VARIABLE . '=' . $op . '&amp;add=1');
+$xtpl = new XTemplate('api-credentials.tpl', NV_ROOTDIR . '/themes/' . $global_config['module_theme'] . '/modules/' . $module_file);
+$xtpl->assign('LANG', $nv_Lang);
+$xtpl->assign('NV_LANG_VARIABLE', NV_LANG_VARIABLE);
+$xtpl->assign('NV_LANG_DATA', NV_LANG_DATA);
+$xtpl->assign('NV_BASE_ADMINURL', NV_BASE_ADMINURL);
+$xtpl->assign('NV_NAME_VARIABLE', NV_NAME_VARIABLE);
+$xtpl->assign('NV_OP_VARIABLE', NV_OP_VARIABLE);
+$xtpl->assign('MODULE_NAME', $module_name);
+$xtpl->assign('OP', $op);
+$xtpl->assign('LINK_ADD', NV_BASE_ADMINURL . 'index.php?' . NV_LANG_VARIABLE . '=' . NV_LANG_DATA . '&amp;' . NV_NAME_VARIABLE . '=' . $module_name . '&amp;' . NV_OP_VARIABLE . '=' . $op . '&amp;add=1');
 
 if ($nv_Request->isset_request('add', 'get') or !empty($credential_ident)) {
     // Lấy tất cả các Admin
@@ -154,12 +160,20 @@ if ($nv_Request->isset_request('add', 'get') or !empty($credential_ident)) {
 
                 if ($sth->execute()) {
                     nv_insert_logs(NV_LANG_DATA, $module_name, 'Add API Credential', $new_credential_ident, $admin_info['userid']);
-
-                    $tpl->assign('CREDENTIAL_IDENT', $new_credential_ident);
-                    $tpl->assign('CREDENTIAL_SECRET', $new_credential_secret);
-                    $tpl->assign('URL_BACK', NV_BASE_ADMINURL . 'index.php?' . NV_LANG_VARIABLE . '=' . NV_LANG_DATA . '&amp;' . NV_NAME_VARIABLE . '=' . $module_name . '&amp;' . NV_OP_VARIABLE . '=' . $op);
-
-                    $contents = $tpl->fetch('api-credentials-result.tpl');
+					$xtpl = new XTemplate('api-credentials-result.tpl', NV_ROOTDIR . '/themes/' . $global_config['module_theme'] . '/modules/' . $module_file);
+					$xtpl->assign('LANG', $nv_Lang);
+					$xtpl->assign('NV_LANG_VARIABLE', NV_LANG_VARIABLE);
+					$xtpl->assign('NV_LANG_DATA', NV_LANG_DATA);
+					$xtpl->assign('NV_BASE_ADMINURL', NV_BASE_ADMINURL);
+					$xtpl->assign('NV_NAME_VARIABLE', NV_NAME_VARIABLE);
+					$xtpl->assign('NV_OP_VARIABLE', NV_OP_VARIABLE);
+					$xtpl->assign('MODULE_NAME', $module_name);
+					$xtpl->assign('OP', $op);
+                    $xtpl->assign('CREDENTIAL_IDENT', $new_credential_ident);
+                    $xtpl->assign('CREDENTIAL_SECRET', $new_credential_secret);
+                    $xtpl->assign('URL_BACK', NV_BASE_ADMINURL . 'index.php?' . NV_LANG_VARIABLE . '=' . NV_LANG_DATA . '&amp;' . NV_NAME_VARIABLE . '=' . $module_name . '&amp;' . NV_OP_VARIABLE . '=' . $op);
+					$xtpl->parse('main');
+					$contents = $xtpl->text('main');
 
                     include NV_ROOTDIR . '/includes/header.php';
                     echo nv_admin_theme($contents);
@@ -188,15 +202,15 @@ if ($nv_Request->isset_request('add', 'get') or !empty($credential_ident)) {
         }
     }
 
-    $tpl->assign('CREDENTIAL_IDENT', $credential_ident);
-    $tpl->assign('DATA', $array_post);
-    $tpl->assign('FORM_ACTION', $form_action);
-    $tpl->assign('ERROR', $error);
-    $tpl->assign('ARRAY_ADMINS', $array_admins);
-    $tpl->assign('ARRAY_ROLES', $global_array_roles);
+    $xtpl->assign('CREDENTIAL_IDENT', $credential_ident);
+    $xtpl->assign('DATA', $array_post);
+    $xtpl->assign('FORM_ACTION', $form_action);
+    $xtpl->assign('ERROR', $error);
+    $xtpl->assign('ARRAY_ADMINS', $array_admins);
+    $xtpl->assign('ARRAY_ROLES', $global_array_roles);
 
-    $contents = $tpl->fetch('api-credentials.tpl');
-
+    $xtpl->parse('main');
+	$contents = $xtpl->text('main');
     include NV_ROOTDIR . '/includes/header.php';
     echo nv_admin_theme($contents);
     include NV_ROOTDIR . '/includes/footer.php';
@@ -205,19 +219,28 @@ if ($nv_Request->isset_request('add', 'get') or !empty($credential_ident)) {
 if (empty($array)) {
     nv_redirect_location(NV_BASE_ADMINURL . 'index.php?' . NV_LANG_VARIABLE . '=' . NV_LANG_DATA . '&' . NV_NAME_VARIABLE . '=' . $module_name . '&' . NV_OP_VARIABLE . '=' . $op . '&add=1');
 }
-
-$tpl->registerPlugin('modifier', 'implode', 'implode');
-$tpl->registerPlugin('modifier', 'date', 'nv_date');
+$xtpl = new XTemplate('api-credentials-list.tpl', NV_ROOTDIR . '/themes/' . $global_config['module_theme'] . '/modules/' . $module_file);
+$xtpl->assign('LANG', $nv_Lang);
+$xtpl->assign('NV_LANG_VARIABLE', NV_LANG_VARIABLE);
+$xtpl->assign('NV_LANG_DATA', NV_LANG_DATA);
+$xtpl->assign('NV_BASE_ADMINURL', NV_BASE_ADMINURL);
+$xtpl->assign('NV_NAME_VARIABLE', NV_NAME_VARIABLE);
+$xtpl->assign('NV_OP_VARIABLE', NV_OP_VARIABLE);
+$xtpl->assign('MODULE_NAME', $module_name);
+$xtpl->assign('OP', $op);
+/* $xtpl->registerPlugin('modifier', 'implode', 'implode');
+ */$xtpl->registerPlugin('modifier', 'date', 'nv_date');
 
 // Thông báo nếu Remote API đang tắt.
-$tpl->assign('NV_BASE_ADMINURL', NV_BASE_ADMINURL);
-$tpl->assign('REMOTE_API_ACCESS', $global_config['remote_api_access']);
-$tpl->assign('URL_CONFIG', NV_BASE_ADMINURL . 'index.php?' . NV_LANG_VARIABLE . '=' . NV_LANG_DATA . '&amp;' . NV_NAME_VARIABLE . '=settings&amp;' . NV_OP_VARIABLE . '=system');
-$tpl->assign('ARRAY', $array);
-$tpl->assign('MODULE_NAME', $module_name);
-$tpl->assign('OP', $op);
+$xtpl->assign('NV_BASE_ADMINURL', NV_BASE_ADMINURL);
+$xtpl->assign('REMOTE_API_ACCESS', $global_config['remote_api_access']);
+$xtpl->assign('URL_CONFIG', NV_BASE_ADMINURL . 'index.php?' . NV_LANG_VARIABLE . '=' . NV_LANG_DATA . '&amp;' . NV_NAME_VARIABLE . '=settings&amp;' . NV_OP_VARIABLE . '=system');
+$xtpl->assign('ARRAY', $array);
+$xtpl->assign('MODULE_NAME', $module_name);
+$xtpl->assign('OP', $op);
 
-$contents = $tpl->fetch('api-credentials-list.tpl');
+$xtpl->parse('main');
+$contents = $xtpl->text('main');
 
 include NV_ROOTDIR . '/includes/header.php';
 echo nv_admin_theme($contents);

@@ -8,13 +8,9 @@
  * @Createdate Sun, 22 Mar 2020 05:07:33 GMT
  */
 
-if (!defined('NV_IS_FILE_API'))
+if (!defined('NV_IS_FILE_ADMIN'))
     die('Stop!!!');
-$array_api_actions = nv_get_api_actions();
-$array_api_cats = $array_api_actions[2];
-$array_api_keys = $array_api_actions[1];
-$array_api_actions = $array_api_actions[0];
-$current_cat = '';
+
 if ($nv_Request->isset_request('ajax_action', 'post')) {
     $role_id = $nv_Request->get_int('role_id', 'post', 0);
     $new_vid = $nv_Request->get_int('new_vid', 'post', 0);
@@ -67,42 +63,16 @@ if ($nv_Request->isset_request('delete_role_id', 'get') and $nv_Request->isset_r
 $row = array();
 $error = array();
 $row['role_id'] = $nv_Request->get_int('role_id', 'post,get', 0);
-$role_id = $nv_Request->get_int('role_id', 'get', 0);
-
-if ($role_id) {
-    if (!isset($array[$role_id])) {
-        nv_redirect_location(NV_BASE_ADMINURL . 'index.php?' . NV_LANG_VARIABLE . '=' . NV_LANG_DATA . '&' . NV_NAME_VARIABLE . '=' . $module_name . '&' . NV_OP_VARIABLE . '=' . $op);
-    }
-    $form_action = NV_BASE_ADMINURL . 'index.php?' . NV_LANG_VARIABLE . '=' . NV_LANG_DATA . '&amp;' . NV_NAME_VARIABLE . '=' . $module_name . '&amp;' . NV_OP_VARIABLE . '=' . $op . '&amp;role_id=' . $role_id;
-    $array_post = $array[$role_id];
-    if (!isset($array_post['role_data']['sys'])) {
-        $array_post['role_data']['sys'] = [];
-    }
-    if (!isset($array_post['role_data'][NV_LANG_DATA])) {
-        $array_post['role_data'][NV_LANG_DATA] = [];
-    }
-} else {
-    $form_action = NV_BASE_ADMINURL . 'index.php?' . NV_LANG_VARIABLE . '=' . NV_LANG_DATA . '&amp;' . NV_NAME_VARIABLE . '=' . $module_name . '&amp;' . NV_OP_VARIABLE . '=' . $op;
-    $array_post = array(
-        'role_title' => '',
-        'role_description' => ''
-    );
-    $array_post['role_data'] = [];
-    $array_post['role_data']['sys'] = [];
-    $array_post['role_data'][NV_LANG_DATA] = [];
-}
-
 if ($nv_Request->isset_request('submit', 'post')) {
-	$current_cat = $nv_Request->get_title('current_cat', 'post', '');
     $row['role_title'] = $nv_Request->get_title('role_title', 'post', '');
     $row['role_description'] = $nv_Request->get_textarea('role_description', '', NV_ALLOWED_HTML_TAGS);
     $row['role_data'] = $nv_Request->get_textarea('role_data', '', NV_ALLOWED_HTML_TAGS);
 
     if (empty($row['role_title'])) {
         $error[] = $lang_module['error_required_role_title'];
-    } /* elseif (empty($row['role_data'])) {
+    } elseif (empty($row['role_data'])) {
         $error[] = $lang_module['error_required_role_data'];
-    } */
+    }
 
     if (empty($error)) {
         try {
@@ -191,85 +161,8 @@ if (!$nv_Request->isset_request('id', 'post,get')) {
     }
     $sth->execute();
 }
-$cat_order = 0;
-$total_api_enabled = 0;
-$array_api_trees = [];
-$array_api_contents = [];
 
-foreach ($array_api_actions as $keysysmodule => $sysmodule_data) {
-    $cat1_is_active = ($keysysmodule == $current_cat and !empty($current_cat)) ? true : false;
-    $cat1_total_api = 0;
-
-    // Lev1: Hệ thống hoặc các module
-    $array_api_trees[$keysysmodule] = [
-        'active' => $cat1_is_active,
-        'total_api' => 0,
-        'key' => $keysysmodule,
-        'name' => $keysysmodule ? $site_mods[$keysysmodule]['custom_title'] : $nv_Lang->getModule('api_of_system'),
-        'subs' => []
-    ];
-
-    // Lev 2: Các cat của hệ thống hoặc các module, trong HTML đối xử ngang nhau
-    foreach ($sysmodule_data as $catkey => $catapis) {
-        $cat_order++;
-
-        if (!empty($catkey)) {
-            $cat2_key = $keysysmodule . '_' . $catkey;
-            $cat2_is_active = ($cat2_key == $current_cat or (!$cat1_is_active and $cat_order == 1 and empty($current_cat))) ? true : false;
-            $cat2_total_api = 0;
-
-            $array_api_trees[$keysysmodule]['subs'][$cat2_key] = [
-                'active' => $cat2_is_active,
-                'total_api' => 0,
-                'key' => $cat2_key,
-                'name' => $catapis['title']
-            ];
-
-            // Các API của lev1 (Các api có cat của lev2 trống)
-            $array_api_contents[$cat2_key] = [
-                'key' => $cat2_key,
-                'active' => $cat2_is_active,
-                'apis' => []
-            ];
-
-            foreach ($catapis['apis'] as $api) {
-                $api_checked = ((empty($keysysmodule) and in_array($api['cmd'], $array_post['role_data']['sys'])) or (!empty($keysysmodule) and isset($array_post['role_data'][NV_LANG_DATA][$keysysmodule]) and in_array($api['cmd'], $array_post['role_data'][NV_LANG_DATA][$keysysmodule])));
-                $total_api_enabled += $api_checked ? 1 : 0;
-                $cat2_total_api += $api_checked ? 1 : 0;
-
-                $array_api_contents[$cat2_key]['apis'][] = [
-                    'cmd' => $api['cmd'],
-                    'name' => $api['title'],
-                    'checked' => $api_checked
-                ];
-            }
-
-            $array_api_trees[$keysysmodule]['subs'][$cat2_key]['total_api'] = $cat2_total_api;
-        } else {
-            // Các API của lev1 (Các api có cat của lev2 trống)
-            $array_api_contents[$keysysmodule] = [
-                'key' => $keysysmodule,
-                'active' => $cat1_is_active,
-                'apis' => []
-            ];
-
-            foreach ($catapis['apis'] as $api) {
-                $api_checked = ((empty($keysysmodule) and in_array($api['cmd'], $array_post['role_data']['sys'])) or (!empty($keysysmodule) and isset($array_post['role_data'][NV_LANG_DATA][$keysysmodule]) and in_array($api['cmd'], $array_post['role_data'][NV_LANG_DATA][$keysysmodule])));
-                $total_api_enabled += $api_checked ? 1 : 0;
-                $cat1_total_api += $api_checked ? 1 : 0;
-
-                $array_api_contents[$keysysmodule]['apis'][] = [
-                    'cmd' => $api['cmd'],
-                    'name' => $api['title'],
-                    'checked' => $api_checked
-                ];
-            }
-        }
-    }
-
-    $array_api_trees[$keysysmodule]['total_api'] = $cat1_total_api;
-}
-$xtpl = new XTemplate('api-roles.tpl', NV_ROOTDIR . '/themes/' . $global_config['module_theme'] . '/modules/' . $module_file);
+$xtpl = new XTemplate('role.tpl', NV_ROOTDIR . '/themes/' . $global_config['module_theme'] . '/modules/' . $module_file);
 $xtpl->assign('LANG', $lang_module);
 $xtpl->assign('NV_LANG_VARIABLE', NV_LANG_VARIABLE);
 $xtpl->assign('NV_LANG_DATA', NV_LANG_DATA);
@@ -310,15 +203,8 @@ if ($show_view) {
     }
     $xtpl->parse('main.view');
 }
-foreach ($array_api_trees as $apilev1){
-	$xtpl->assign('apilev1', $apilev1);
-	foreach($apilev1['subs'] as $apilev2){
-		$xtpl->assign('apilev2', $apilev2);
-		$xtpl->parse('main.cat_module.sub_cat');
-	}
-	$xtpl->parse('main.cat_module');
-}
-print_r($array_api_trees);
+
+
 if (!empty($error)) {
     $xtpl->assign('ERROR', implode('<br />', $error));
     $xtpl->parse('main.error');
