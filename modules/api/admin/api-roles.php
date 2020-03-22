@@ -311,14 +311,40 @@ if ($show_view) {
     $xtpl->parse('main.view');
 }
 foreach ($array_api_trees as $apilev1){
+	if($apilev1['active']){
+		$apilev1_active = 'class="active"';
+	}else{
+		$apilev1_active = "";
+	}
+	$xtpl->assign('ACTIVE', $apilev1_active);
 	$xtpl->assign('apilev1', $apilev1);
 	foreach($apilev1['subs'] as $apilev2){
+		if($apilev2['active']){
+			$apilev2_active = 'class="active"';
+		}else{
+			$apilev2_active = "";
+		}
+		$xtpl->assign('ACTIVESUB', $apilev2_active);
 		$xtpl->assign('apilev2', $apilev2);
 		$xtpl->parse('main.cat_module.sub_cat');
 	}
 	$xtpl->parse('main.cat_module');
 }
-print_r($array_api_trees);
+foreach ($array_api_contents as $apicontent){
+	if($apicontent['active']){
+		$apicontent_active = 'style="display: block;"';
+	}else{
+		$apicontent_active = 'style="display: none;"';
+	}
+	$xtpl->assign('ACTIVECONTENT', $apicontent_active);
+	$xtpl->assign('apicontent', $apicontent);
+	foreach($apicontent['apis'] as $api){
+		$xtpl->assign('api', $api);
+		$xtpl->parse('main.tab_module.api');
+	}
+	$xtpl->parse('main.tab_module');
+}
+
 if (!empty($error)) {
     $xtpl->assign('ERROR', implode('<br />', $error));
     $xtpl->parse('main.error');

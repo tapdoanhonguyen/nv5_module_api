@@ -79,7 +79,7 @@
         <label class="col-sm-5 col-md-4 control-label"><strong>{LANG.api_access}</strong> </label>
         <div class="col-sm-19 col-md-20">
             <div class="form-group row">
-				<div class="col-12 col-sm-3">
+				<div class="col-24 col-sm-6">
 					<div class="root-api-actions">
 						<ul>
 							<!-- BEGIN: cat_module -->
@@ -91,26 +91,28 @@
 						</ul>
 					</div>
 				</div>
-				<div class="col-12 col-sm-9">
+				<div class="col-24 col-sm-18">
 					<div class="child-apis">
 						<div class="panel-body">
 							
 							<!-- BEGIN: tab_module -->
-							<div data-toggle="apichid" class="child-apis-item" id="api-child-about" style="display: none;">
+							<div data-toggle="apichid" class="child-apis-item" id="api-child-{apicontent.key}" {ACTIVECONTENT}>
 								<div class="child-apis-item-ctn">
 									<div class="row">
-																					<div class="col-12 col-sm-6">
+										<!-- BEGIN: api -->
+										<div class="col-24 col-sm-12">
 											<label class="custom-control custom-checkbox my-1">
-												<input data-toggle="apiroleit" class="custom-control-input" type="checkbox" name="api_about[]" value="CreatArticle"><span class="custom-control-label">Tạo bài viết</span>
+												<input data-toggle="apiroleit" class="custom-control-input" type="checkbox" name="api_{apicontent.key}[]" value="{api.cmd}"><span class="custom-control-label">{api.name}</span>
 											</label>
 										</div>
-																				</div>
+										<!-- END: api -->
+									</div>
 								</div>
 								<div class="child-apis-item-tool">
 									<hr>
 									<ul class="list-inline list-unstyled">
-										<li class="list-inline-item"><a href="#api-child-about" data-toggle="apicheck"><i class="fas fa-check-circle text-muted"></i> Chọn tất cả</a></li>
-										<li class="list-inline-item"><a href="#api-child-about" data-toggle="apiuncheck"><i class="fas fa-circle text-muted"></i> Bỏ chọn tất cả</a></li>
+										<li class="list-inline-item"><a href="#api-child-{apicontent.key}" data-toggle="apicheck"><i class="fas fa-check-circle text-muted"></i> Chọn tất cả</a></li>
+										<li class="list-inline-item"><a href="#api-child-{apicontent.key}" data-toggle="apiuncheck"><i class="fas fa-circle text-muted"></i> Bỏ chọn tất cả</a></li>
 									</ul>
 								</div>
 							</div>
