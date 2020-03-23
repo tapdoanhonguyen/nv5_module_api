@@ -20,16 +20,16 @@ if ($nv_Request->isset_request('ajax_action', 'post')) {
     $new_vid = $nv_Request->get_int('new_vid', 'post', 0);
     $content = 'NO_' . $role_id;
     if ($new_vid > 0)     {
-        $sql = 'SELECT role_id FROM ' . NV_PREFIXLANG . '_' . $module_data . '_role WHERE role_id!=' . $role_id . ' ORDER BY addtime ASC';
+        $sql = 'SELECT role_id FROM ' . NV_AUTHORS_GLOBALTABLE . '_api_role WHERE role_id!=' . $role_id . ' ORDER BY addtime ASC';
         $result = $db->query($sql);
         $addtime = 0;
         while ($row = $result->fetch())
         {
             ++$addtime;
-            if ($addtime == $new_vid) ++$addtime;             $sql = 'UPDATE ' . NV_PREFIXLANG . '_' . $module_data . '_role SET addtime=' . $addtime . ' WHERE role_id=' . $row['role_id'];
+            if ($addtime == $new_vid) ++$addtime;             $sql = 'UPDATE ' . NV_AUTHORS_GLOBALTABLE . '_api_role SET addtime=' . $addtime . ' WHERE role_id=' . $row['role_id'];
             $db->query($sql);
         }
-        $sql = 'UPDATE ' . NV_PREFIXLANG . '_' . $module_data . '_role SET addtime=' . $new_vid . ' WHERE role_id=' . $role_id;
+        $sql = 'UPDATE ' . NV_AUTHORS_GLOBALTABLE . '_api_role SET addtime=' . $new_vid . ' WHERE role_id=' . $role_id;
         $db->query($sql);
         $content = 'OK_' . $role_id;
     }
@@ -96,7 +96,34 @@ if ($nv_Request->isset_request('submit', 'post')) {
 	$current_cat = $nv_Request->get_title('current_cat', 'post', '');
     $row['role_title'] = $nv_Request->get_title('role_title', 'post', '');
     $row['role_description'] = $nv_Request->get_textarea('role_description', '', NV_ALLOWED_HTML_TAGS);
-    $row['role_data'] = $nv_Request->get_textarea('role_data', '', NV_ALLOWED_HTML_TAGS);
+	$row['role_data'] = [];
+    // Các API của hệ thống
+    $row['role_data']['sys'] = [];
+    // Các API của module theo ngôn ngữ
+    $row['role_data'][NV_LANG_DATA] = [];
+
+    // Lấy các API được phép
+    foreach ($array_api_actions as $keysysmodule => $sysmodule_data) {
+        // Các API không có CAT
+        $api_nocat = $nv_Request->get_typed_array('api_' . $keysysmodule, 'post', 'string', []);
+        $api_cat = [];
+        foreach ($sysmodule_data as $catkey => $catapis) {
+            $api_cat = array_merge_recursive($api_cat, $nv_Request->get_typed_array('api_' . $keysysmodule . '_' . $catkey, 'post', 'string', []));
+        }
+        $api_submits = array_filter(array_unique(array_merge_recursive($api_nocat, $api_cat)));
+        $api_submits = array_intersect($api_submits, $array_api_keys[$keysysmodule]);
+        if (empty($keysysmodule)) {
+            $row['role_data']['sys'] = $api_submits;
+        } elseif (!empty($api_submits)) {
+            $row['role_data'][NV_LANG_DATA][$keysysmodule] = $api_submits;
+        }
+    }
+
+    $sql = 'SELECT role_id FROM ' . NV_AUTHORS_GLOBALTABLE . '_api_role WHERE role_title=:role_title' . ($role_id ? (' AND role_id!=' . $role_id) : '');
+    $sth = $db->prepare($sql);
+    $sth->bindParam(':role_title', $row['role_title'], PDO::PARAM_STR);
+    $sth->execute();
+    $is_exists = $sth->fetchColumn();
 
     if (empty($row['role_title'])) {
         $error[] = $lang_module['error_required_role_title'];
@@ -106,23 +133,24 @@ if ($nv_Request->isset_request('submit', 'post')) {
 
     if (empty($error)) {
         try {
+			$content_role_data = serialize($row['role_data']);print_r($content_role_data);
             if (empty($row['role_id'])) {
                 $row['edittime'] = 0;
 
-                $stmt = $db->prepare('INSERT INTO ' . NV_PREFIXLANG . '_' . $module_data . '_role (role_title, role_description, role_data, addtime, edittime) VALUES (:role_title, :role_description, :role_data, :addtime, :edittime)');
+                $stmt = $db->prepare('INSERT INTO ' . NV_AUTHORS_GLOBALTABLE . '_api_role (role_title, role_description, role_data, addtime, edittime) VALUES (:role_title, :role_description, :role_data, :addtime, :edittime)');
 
-                $weight = $db->query('SELECT max(addtime) FROM ' . NV_PREFIXLANG . '_' . $module_data . '_role')->fetchColumn();
+                $weight = $db->query('SELECT max(addtime) FROM ' . NV_AUTHORS_GLOBALTABLE . '_api_role')->fetchColumn();
                 $weight = intval($weight) + 1;
                 $stmt->bindParam(':addtime', $weight, PDO::PARAM_INT);
 
                 $stmt->bindParam(':edittime', $row['edittime'], PDO::PARAM_INT);
 
             } else {
-                $stmt = $db->prepare('UPDATE ' . NV_PREFIXLANG . '_' . $module_data . '_role SET role_title = :role_title, role_description = :role_description, role_data = :role_data WHERE role_id=' . $row['role_id']);
+                $stmt = $db->prepare('UPDATE ' . NV_AUTHORS_GLOBALTABLE . '_api_role SET role_title = :role_title, role_description = :role_description, role_data = :role_data WHERE role_id=' . $row['role_id']);
             }
             $stmt->bindParam(':role_title', $row['role_title'], PDO::PARAM_STR);
             $stmt->bindParam(':role_description', $row['role_description'], PDO::PARAM_STR, strlen($row['role_description']));
-            $stmt->bindParam(':role_data', $row['role_data'], PDO::PARAM_STR, strlen($row['role_data']));
+            $stmt->bindParam(':role_data', $content_role_data, PDO::PARAM_STR, strlen($content_role_data));
 
             $exc = $stmt->execute();
             if ($exc) {
@@ -140,7 +168,7 @@ if ($nv_Request->isset_request('submit', 'post')) {
         }
     }
 } elseif ($row['role_id'] > 0) {
-    $row = $db->query('SELECT * FROM ' . NV_PREFIXLANG . '_' . $module_data . '_role WHERE role_id=' . $row['role_id'])->fetch();
+    $row = $db->query('SELECT * FROM ' . NV_AUTHORS_GLOBALTABLE . '_api_role WHERE role_id=' . $row['role_id'])->fetch();
     if (empty($row)) {
         nv_redirect_location(NV_BASE_ADMINURL . 'index.php?' . NV_LANG_VARIABLE . '=' . NV_LANG_DATA . '&' . NV_NAME_VARIABLE . '=' . $module_name . '&' . NV_OP_VARIABLE . '=' . $op);
     }
@@ -165,7 +193,7 @@ if (!$nv_Request->isset_request('id', 'post,get')) {
     $page = $nv_Request->get_int('page', 'post,get', 1);
     $db->sqlreset()
         ->select('COUNT(*)')
-        ->from('' . NV_PREFIXLANG . '_' . $module_data . '_role');
+        ->from('' . NV_AUTHORS_GLOBALTABLE . '_api_role');
 
     if (!empty($q)) {
         $db->where('role_title LIKE :q_role_title OR role_data LIKE :q_role_data');

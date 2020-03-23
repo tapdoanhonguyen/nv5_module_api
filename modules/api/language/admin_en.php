@@ -34,3 +34,16 @@ $lang_module['role_description'] = 'Role description';
 $lang_module['role_data'] = 'Role data';
 $lang_module['error_required_role_title'] = 'Error: Required fields enter the Role title';
 $lang_module['error_required_role_data'] = 'Error: Required fields enter the Role data';
+
+//Lang for function credential
+$lang_module['credential'] = 'credential';
+$lang_module['admin_id'] = 'Admin id';
+$lang_module['credential_title'] = 'Credential title';
+$lang_module['credential_ident'] = 'Credential ident';
+$lang_module['credential_secret'] = 'Credential secret';
+$lang_module['api_roles'] = 'Api roles';
+$lang_module['edittime'] = 'Edittime';
+$lang_module['last_access'] = 'Last access';
+
+//Lang for function credential
+$lang_module['error_required_credential_title'] = 'Error: Required fields enter the Credential title';
