@@ -116,17 +116,20 @@ if (empty($api_request['action'])) {
     }
     $classname = 'NukeViet\\Api\\' . $api_request['action'];
 } else {
+	
     // Api module theo ngôn ngữ
     if (!isset($credential_data['api_allowed'][NV_LANG_DATA])) {
         $apiresults->setCode(ApiResult::CODE_LANG_NOT_EXISTS)->setMessage('Api Lang Not Found!!!')->returnResult();
     } elseif (!isset($credential_data['api_allowed'][NV_LANG_DATA][$api_request['module']]) or !isset($sys_mods[$api_request['module']])) {
+		print_r($credential_data['api_allowed'][NV_LANG_DATA][$api_request['module']]);
         $apiresults->setCode(ApiResult::CODE_MODULE_NOT_EXISTS)->setMessage('Api Module Not Found!!!')->returnResult();
     } elseif (!in_array($api_request['action'], $credential_data['api_allowed'][NV_LANG_DATA][$api_request['module']])) {
         $apiresults->setCode(ApiResult::CODE_API_NOT_EXISTS)->setMessage('Api Command Not Found!!!')->returnResult();
     }
 
     $module_info = $sys_mods[$api_request['module']];
-    $module_file = $module_info['module_file'];
+    $module_file = ucfirst($module_info['module_file']);
+	
     $classname = 'NukeViet\\Module\\' . $module_file . '\\Api\\' . $api_request['action'];
 }
 
@@ -137,7 +140,7 @@ define('NV_REMOTE_API', true);
 $nv_Lang->loadGlobal(true);
 
 // Class tồn tại
-if (!class_exists($classname)) {
+if (!class_exists($classname)) {print_r($classname);die;
     $apiresults->setCode(ApiResult::CODE_API_NOT_EXISTS)->setMessage('API not exists!!!')->returnResult();
 }
 
