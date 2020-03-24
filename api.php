@@ -140,7 +140,7 @@ define('NV_REMOTE_API', true);
 $nv_Lang->loadGlobal(true);
 
 // Class tồn tại
-if (!class_exists($classname)) {print_r($classname);die;
+if (!class_exists($classname)) {
     $apiresults->setCode(ApiResult::CODE_API_NOT_EXISTS)->setMessage('API not exists!!!')->returnResult();
 }
 
