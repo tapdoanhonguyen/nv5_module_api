@@ -8,6 +8,8 @@
  * @Createdate Jul 2, 2017 2:06:56 PM
  */
 
+
+$headers = getallheaders();
 define('NV_SYSTEM', true);
 
 // Xac dinh thu muc goc cua site
@@ -68,10 +70,13 @@ Api::setAdminName($credential_data['username']);
 
 // Thông tin request
 $api_request = [];
-$api_request['action'] = $nv_Request->get_title('action', 'post', '');
-$api_request['module'] = $nv_Request->get_title('module', 'post', '');
-$api_request['language'] = $nv_Request->get_title(NV_LANG_VARIABLE, 'post', '');
-
+if( json_decode(file_get_contents('php://input'), true)){
+	$api_request=json_decode(file_get_contents('php://input'), true);
+}else{
+	$api_request['action'] = $nv_Request->get_title('action', 'post', '');
+	$api_request['module'] = $nv_Request->get_title('module', 'post', '');
+	$api_request['language'] = $nv_Request->get_title(NV_LANG_VARIABLE, 'post', '');
+}
 // Nếu site đa ngôn ngữ bắt buộc phải truyền tham số language
 if (sizeof($global_config['allow_sitelangs']) > 1 and empty($api_request['language'])) {
     $apiresults->setCode(ApiResult::CODE_MISSING_LANG)->setMessage('Lang Data is required for multi-language website!!!')->returnResult();
